@@ -1,0 +1,39 @@
+import { Card, Steps, theme } from "antd";
+import Title from "antd/es/skeleton/Title";
+import Text from "antd/es/typography/Text";
+
+const Step = ({ name,data }) => {
+  const { token } = theme.useToken();
+
+  const steps = data.map(item => ({
+    title: <Text strong style={{ fontSize: 16 }}>{item.name}</Text>,
+    content: (
+      <div style={{
+        marginTop: 12,
+        marginBottom: 16,
+        padding: 16,
+        background: token.colorFillAlter,
+        borderRadius: token.borderRadiusLG,
+        border: `1px solid ${token.colorBorderSecondary}`,
+      }}>
+        <Text type="secondary">Execution time: {item.time}</Text>
+      </div>
+    ),
+    status: item.status ? 'finish' : 'error'
+  }))
+
+  return (
+    <Card
+      style={{
+        width: '100%',
+        boxShadow: token.boxShadowTertiary,
+        borderRadius: token.borderRadiusLG
+      }}
+    >
+      <Title level={3} style={{ marginTop: 0, marginBottom: 32 }}>{name}</Title>
+      <Steps orientation="horizontal" current={-1} items={steps} />
+    </Card>
+  )
+}
+
+export default Step;
