@@ -1,21 +1,20 @@
-import { Avatar, Card, Col, Flex, Steps } from 'antd'
-import { AntDesignOutlined, ExclamationCircleTwoTone } from '@ant-design/icons';
-
-import React from 'react'
+import { Card, Col, Row, Tag } from 'antd'
 import Job from './Job';
 
-const Runner = ({data}) => {
+const Runner = ({ name, data }) => {
   return (
-    <Card title="runner">
-      <p>
-        {}
-      </p>
-        <div style={{ flex: 1 }}>
-          {data.map((item, index) => (
-            <Job key={index} name={item.name} data={item.steps} />
-          ))}
-        </div>
-        <ExclamationCircleTwoTone />
+    <Card
+      title={name}
+      extra={<Tag color="blue">{data.length} st</Tag>}
+      style={{ marginTop: 12 }}
+    >
+      <Row gutter={[16, 16]}>
+        {data.map((item, index) => (
+          <Col key={index} xs={24} md={12}>
+            <Job name={item.name} data={item.steps} />
+          </Col>
+        ))}
+      </Row>
     </Card>
   )
 }

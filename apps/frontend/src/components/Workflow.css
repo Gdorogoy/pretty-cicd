@@ -1,0 +1,39 @@
+.workflow-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  min-height: 100%;
+}
+
+.workflow-header {
+  margin-bottom: 24px;
+}
+
+.workflow-title {
+  margin-bottom: 4px !important;
+}
+
+.workflow-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+}
+
+.workflow-content {
+  margin-top: 0;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.workflow-page .ant-spin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+}
