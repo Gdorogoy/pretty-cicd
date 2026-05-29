@@ -22,7 +22,7 @@ const jobToStepStatus = (conclusion) => {
   return 'process';
 };
 
-const Workflow = () => {
+const Workflow = ({num}) => {
   const [workflow, setWorkflow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ const Workflow = () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchWorkflow();
+        const data = await fetchWorkflow(undefined,undefined,num);
         setWorkflow(data);
         setCurrentJob(0);
       } catch (err) {
@@ -44,7 +44,7 @@ const Workflow = () => {
     };
 
     load();
-  }, []);
+  }, [num]);
 
   const jobSteps = useMemo(() => {
     if (!workflow?.jobs?.length) return [];

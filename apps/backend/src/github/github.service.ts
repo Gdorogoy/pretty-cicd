@@ -4,11 +4,16 @@ import { ConfigService } from '@nestjs/config';
 import { Octokit } from 'octokit';
 import { mapAllWorkflows, mapToResponse } from './github.response.dto';
 import axios from 'axios';
-import { run } from 'node:test';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class GithubService {
+
   private octokit: Octokit;
+  private repoData;
+  private latestKnownRunId;
+
+
 
   constructor(
     private readonly socketGateway: SocketGateway,
@@ -17,49 +22,103 @@ export class GithubService {
     this.octokit = new Octokit({
       auth: this.configService.getOrThrow('github_key'),
     });
+    this.repoData = {};
+    this.latestKnownRunId = null;
   }
 
-  async fetchWorkflowByNum(owner: string, repo: string,num:number) {
-    const res = await this.octokit.rest.actions.listWorkflowRunsForRepo({
-      owner,
-      repo,
-    });
+  async fetchWorkflowByNum(owner: string, repo: string, num: number) {
 
-    const latestRun = res.data.workflow_runs[num];
-    if (!latestRun?.jobs_url) {
-      throw new Error('No workflow runs found');
+    try {
+
+      //fetching the worklfows
+
+      const res = await this.octokit.rest.actions.listWorkflowRunsForRepo({
+        owner,
+        repo,
+      });
+
+      this.repoData = {
+        owner: owner,
+        repo: repo
+      }
+
+      this.latestKnownRunId = res.data.workflow_runs[0].id;
+
+      const latestRun = res.data.workflow_runs[num];
+      if (!latestRun?.jobs_url) {
+        throw new Error('No workflow runs found');
+      }
+
+      try {
+
+        //fetching the jobs
+
+        const job = await axios.get(latestRun.jobs_url, {
+          headers: {
+            Authorization: `Bearer ${this.configService.getOrThrow('github_key')}`,
+            Accept: 'application/vnd.github+json',
+          },
+        });
+
+        return mapToResponse(latestRun, job.data.jobs);
+
+      } catch (err) {
+        throw new Error(err);
+
+      }
+
+    } catch (err) {
+      throw new Error(err);
     }
 
-    const job = await axios.get(latestRun.jobs_url, {
-      headers: {
-        Authorization: `Bearer ${this.configService.getOrThrow('github_key')}`,
-        Accept: 'application/vnd.github+json',
-      },
-    });
-
-    return mapToResponse(latestRun, job.data.jobs);
   }
 
   async fetchAllWorkFlows(owner: string, repo: string) {
-    const res = await this.octokit.rest.actions.listWorkflowRunsForRepo({
-      owner,
-      repo,
-    });
 
-    const runs = res.data.workflow_runs;
-    // if (!latestRun?.jobs_url) {
-    //   throw new Error('No workflow runs found');
-    // }
+    try {
+      const res = await this.octokit.rest.actions.listWorkflowRunsForRepo({
+        owner,
+        repo,
+      });
 
-    // const job = await axios.get(latestRun.jobs_url, {
-    //   headers: {
-    //     Authorization: `Bearer ${this.configService.getOrThrow('github_key')}`,
-    //     Accept: 'application/vnd.github+json',
-    //   },
-    // });
+      const runs = res.data.workflow_runs;
 
-    // return mapToResponse(latestRun, job.data.jobs);
+      return mapAllWorkflows(runs);
 
-    return mapAllWorkflows(runs);
+    } catch (err) {
+      throw new Error(err);
+    }
+
   }
+
+
+  @Cron("*/10 * * * * *")
+  async schedule() {
+    if (!this.repoData.owner || !this.repoData.repo) {
+      return;
+    }
+
+    try {
+      const res = await this.octokit.rest.actions.listWorkflowRunsForRepo({
+        owner: this.repoData.owner,
+        repo: this.repoData.repo,
+      });
+
+
+      const latestRun = res.data.workflow_runs[0];
+
+      if (latestRun && latestRun.id !== this.latestKnownRunId) {
+
+        this.latestKnownRunId = latestRun.id;
+
+        this.socketGateway.sendUpadte(res.data);
+      }
+
+    }
+    catch (err) {
+      throw err;
+    }
+
+  }
+
 }

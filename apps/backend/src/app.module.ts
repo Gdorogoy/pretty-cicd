@@ -4,10 +4,15 @@ import { AppService } from './app.service';
 import { GithubModule } from './github/github.module';
 import { SocketModule } from './socket/socket.module';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [GithubModule, SocketModule,ConfigModule.forRoot({isGlobal:true})],
+  imports: [GithubModule,
+    SocketModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot()
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

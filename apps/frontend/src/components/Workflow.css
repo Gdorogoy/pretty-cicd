@@ -37,3 +37,26 @@
   justify-content: center;
   min-height: 240px;
 }
+
+/* Timeline: line only, no check / status icons */
+.all-workflows-timeline .ant-timeline-item-head {
+  width: 8px;
+  height: 8px;
+  background: #d9d9d9;
+  border: 2px solid #d9d9d9;
+}
+
+.all-workflows-timeline .ant-timeline-item-head-custom {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.all-workflows-timeline .ant-timeline-item-tail {
+  border-inline-start: 2px solid #d9d9d9;
+}
+
+.artifact-card--selected {
+  border-color: #1677ff !important;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.15);
+}
